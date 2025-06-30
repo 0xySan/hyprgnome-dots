@@ -89,21 +89,22 @@ clear
 
 # Use gum for CLI menu
 choose_one() {
-	local header="$1"
-	shift
+	local height="$1"
+	local header="$2"
+	shift 2
 	local options=("$@")
-	printf '%s\n' "${options[@]}" | $fzf --header="$header" --height=10 --border --ansi --prompt="> " --no-multi --cycle
+	printf '%s\n' "${options[@]}" | $fzf --header="$header" --height="$height" --border --ansi --prompt="> " --no-multi --cycle
 }
 
 # Function to select multiple options using fzf
 choose_multi() {
-	local header="$1"
+	local header="$2"
 	shift
 	local options=("$@")
 	printf '%s\n' "${options[@]}" | $fzf --header="$header" --height=10 --border --ansi --prompt="> " --multi --cycle
 }
 
-CHOICE=$(choose_one "Choose what you wanna do today !
+CHOICE=$(choose_one 10 "Choose what you wanna do today !
 Press <Escape> to cancel at any time !" Install Uninstall Update Exit)
 
 case "$CHOICE" in
@@ -134,7 +135,7 @@ case "$CHOICE" in
 				tput sgr0
 			fi
 
-			CONFIRM=$(choose_one "Is this correct?" Yes No)
+			CONFIRM=$(choose_one 7 "Is this correct?" Yes No)
 
 			if [[ "$CONFIRM" == "Yes" ]]; then
 				break
@@ -167,7 +168,10 @@ case "$CHOICE" in
 			tput sgr0
 		fi
 
-		CHOICE_DIR=$(choose_one "Where would you like to install it?" "$HOME/.local/share/hyprgnome" "$HOME/hyprgnome" "Custom location")
+		CHOICE_DIR=$(choose_one 11 "Where would you like to install it?
+Careful ! 
+Only give full paths and do not use link symbols,
+as it could break the install for custom locations !" "$HOME/.local/share/hyprgnome" "$HOME/hyprgnome" "Custom location")
 
 		if [[ "$CHOICE_DIR" == "Custom location" ]]; then
 			read -rp "Enter custom install path: " INSTALL_PATH
@@ -176,7 +180,7 @@ case "$CHOICE" in
 		fi
 		
 
-		OWNER=$(namei -l "$FILE" | tail -n 2 | head -n 1 | awk '{print $2}')
+		OWNER=$(namei -l "$CHOICE_DIR" | tail -n 2 | head -n 1 | awk '{print $2}')
 		ME=$(whoami)
 
 		if [ "$OWNER" != "$ME" ]; then
@@ -185,7 +189,7 @@ case "$CHOICE" in
 		fi
 	
 		if [ ! -d "$INSTALL_PATH" ]; then
-			CREATE=$(choose_one "Directory does not exist. Create it?" Yes No)
+			CREATE=$(choose_one 7 "Directory does not exist. Create it?" Yes No)
 			if [[ "$CREATE" == "Yes" ]]; then
 				mkdir -p "$INSTALL_PATH"
 				echo "Directory created."
@@ -197,6 +201,20 @@ case "$CHOICE" in
 
 		# Your actual install commands here
 		echo "Installing files to $INSTALL_PATH..."
+		git clone https://github.com/Homebrew/brew $INSTALL_PATH/homebrew
+		eval "$($INSTALL_PATH/homebrew/bin/brew shellenv)"
+		brew update --force --quiet
+		chmod -R go-w "$(brew --prefix)/share/zsh"
+
+		CONFIRM=$(choose_one 7 "Wanna add Homebrew in your .zshrc ?" Yes No)
+		
+		if [[ "$CONFIRM" == "Yes" ]]; then
+			echo "Adding Homebrew to your .zshrc..."
+			echo "export PATH=\"$INSTALL_PATH/homebrew/bin:\$PATH\"" >> "$HOME/.zshrc"
+			echo "Homebrew added to .zshrc."
+		else
+			echo "Homebrew not added to .zshrc."
+		fi
 		;;
 	Uninstall)
 		echo "Uninstalling..."

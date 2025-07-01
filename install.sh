@@ -104,11 +104,70 @@ choose_multi() {
 	printf '%s\n' "${options[@]}" | $fzf --header="$header" --height=10 --border --ansi --prompt="> " --multi --cycle
 }
 
+install_dots() {
+	local options=("$@")
+
+	for i in "${!options[@]}"; do
+		options[$i]="${options[$i],,}"
+	done
+
+	for option in "${options[@]}"; do
+		local src="$SCRIPT_DIR/dots-conf/$option"
+		local dest="$HOME/.config/$option"
+
+		if [ -d "$src" ]; then
+			echo "Installing $option from $src to $dest..."
+			if [ -d "$dest" ]; then
+				CONFIRM=$(choose_one 9 "Directory for config $option is already installed wanna replace it?" Yes No)
+				if [[ "$CONFIRM" == "Yes" ]]; then
+					rm -r "$dest"
+				else
+					continue
+				fi
+			fi
+			cp -r "$src" "$dest"
+			echo "$option installed successfully."
+		else
+			echo "Source directory for $option does not exist: $src"
+		fi
+	done
+
+	if [ -d "$HOME/.config/hyprgnome" ]; then
+		rm -rf "$HOME/.config/hyprgnome"
+	fi
+	cp -r "$SCRIPT_DIR/dots-conf/hyprgnome" "$HOME/.config/hyprgnome"
+}
+
 CHOICE=$(choose_one 10 "Choose what you wanna do today !
 Press <Escape> to cancel at any time !" Install Uninstall Update Exit)
 
 case "$CHOICE" in
 	Install)
+		if [ -d "$HOME/.config/hyprgnome" ]; then
+			OLD_PATH=$(cat "$HOME/.config/hyprgnome/.path" 2>/dev/null || echo "")
+			if [ -z "$OLD_PATH" ]; then
+				MESSAGE="HyprGnome is already installed in $HOME/.config/hyprgnome.
+Do you want to reinstall it?"
+			else
+				MESSAGE="HyprGnome is already installed in $HOME/.config/hyprgnome.
+Found old path: $OLD_PATH.
+Do you want to reinstall it?"
+			fi
+			CONFIRM=$(choose_one 9 "$MESSAGE" Yes No)
+			if [[ "$CONFIRM" == "No" ]]; then
+				echo "Installation aborted."
+				exit 0
+			else
+				echo "Reinstalling HyprGnome..."
+				if [ -d "$OLD_PATH" ]; then
+					echo "Removing old HyprGnome directory at $OLD_PATH..."
+					rm -rf "$OLD_PATH"
+				else
+					echo "No previous HyprGnome directory found at $OLD_PATH."
+				fi
+				rm -rf "$HOME/.config/hyprgnome"
+			fi
+		fi
 		while true; do
 			OPTIONS=$(./gum choose --no-limit --header="Select components:" Kitty Rofi Zen Btop++ Vencord)
 
@@ -195,6 +254,8 @@ as it could break the install for custom locations !" "$HOME/.local/share/hyprgn
 				echo "Directory created."
 			else
 				echo "Installation aborted."
+				# readarray -t OPTIONS_ARRAY <<< "$OPTIONS" FOR DOTS <--------------
+				# install_dots "${OPTIONS_ARRAY[@]}"
 				exit 1
 			fi
 		fi
@@ -206,7 +267,7 @@ as it could break the install for custom locations !" "$HOME/.local/share/hyprgn
 		brew update --force --quiet
 		chmod -R go-w "$(brew --prefix)/share/zsh"
 
-		CONFIRM=$(choose_one 7 "Wanna add Homebrew in your .zshrc ?" Yes No)
+		CONFIRM=$(choose_one 7 "Wanna add binaries in your PATH='', in the .zshrc ?" Yes No)
 		
 		if [[ "$CONFIRM" == "Yes" ]]; then
 			echo "Adding Homebrew to your .zshrc..."

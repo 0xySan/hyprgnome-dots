@@ -1,8 +1,8 @@
 #!/bin/bash
 
-theme="/home/etaquet/.config/rofi/config/open.rasi"
+theme="/home/$USER/.config/rofi/config/open.rasi"
 
-export $(grep -v '^#' /home/etaquet/.config/hyprgnome/.env | xargs)
+export $(grep -v '^#' /home/$USER/.config/hyprgnome/.env | xargs)
 
 folders=( $(find ~/sgoinfre/private/WIP42projects -maxdepth 1 -mindepth 1 -type d) $(find ~/sgoinfre/private/finished_42_projects -maxdepth 1 -mindepth 1 -type d) )
 

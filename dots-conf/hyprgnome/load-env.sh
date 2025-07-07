@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ENV_FILE="/home/etaquet/.config/hyprgnome/.env"
+ENV_FILE="/home/$USER/.config/hyprgnome/.env"
 
 if [[ -f "$ENV_FILE" ]]; then
   # Load variables in a safe way: ignore comments and blank lines

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+export $(grep -v '^#' /home/$USER/.config/hyprgnome/.env | xargs)
+
+ALLWALLPAPERS=$(find $WALLPAPERS -maxdepth 1 -type f \( \
+  -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o \
+  -iname "*.gif" -o -iname "*.bmp" -o -iname "*.tiff" -o \
+  -iname "*.webp" -o -iname "*.heic" -o -iname "*.avif" \
+\))
+
+MIN=1
+MAX=$(echo "$ALLWALLPAPERS" | wc -l)
+
+if [ "$MAX" -eq 0 ]; then
+  echo "No wallpapers found."
+  exit 1
+fi
+
+# Get the currently set wallpaper (strip 'file://')
+OLD_WALLPAPER=$(gsettings get org.gnome.desktop.background picture-uri | sed "s/^'file:\/\///;s/'//")
+
+NEW_WALLPAPER="$OLD_WALLPAPER"
+
+# Keep trying until a different wallpaper is selected
+while [ "$NEW_WALLPAPER" == "$OLD_WALLPAPER" ]; do
+  RNVALUE=$(( RANDOM % MAX + 1 ))
+  NEW_WALLPAPER=$(echo "$ALLWALLPAPERS" | sed -n "${RNVALUE}p")
+done
+
+echo "Setting new wallpaper: $NEW_WALLPAPER"
+
+# Apply the new wallpaper
+gsettings set org.gnome.desktop.background picture-uri "file://$NEW_WALLPAPER"
+gsettings set org.gnome.desktop.background picture-uri-dark "file://$NEW_WALLPAPER"

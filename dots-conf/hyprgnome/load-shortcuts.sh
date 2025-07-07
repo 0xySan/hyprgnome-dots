@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "🔄 Loading shortcuts from /home/etaquet/.config/hyprgnome/shortcuts.conf"
+echo "🔄 Loading shortcuts from /home/$USER/.config/hyprgnome/shortcuts.conf"
 
 # Load environment variables
-source /home/etaquet/.config/hyprgnome/load-env.sh
+source /home/$USER/.config/hyprgnome/load-env.sh
 
-CONFIG_FILE="/home/etaquet/.config/hyprgnome/shortcuts.conf"
+CONFIG_FILE="/home/$USER/.config/hyprgnome/shortcuts.conf"
 BASE_PATH="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
 SHORTCUT_PATHS=()
 INDEX=0

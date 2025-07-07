@@ -1,8 +1,8 @@
 #!/bin/bash
 
-theme="/home/etaquet/.config/rofi/config/edit.rasi"
+theme="/home/$USER/.config/rofi/config/edit.rasi"
 
-export $(grep -v '^#' /home/etaquet/.config/hyprgnome/.env | xargs)
+export $(grep -v '^#' /home/$USER/.config/hyprgnome/.env | xargs)
 
 options=("1. View / Edit shortcuts.conf" "2. View / Edit env.conf" "3. Reinstall Vencord" "4. Reload shortcuts")
 
@@ -16,7 +16,7 @@ case "$selected_option" in
     $TERMINAL $EDITOR $HOME/.config/hyprgnome/.env
 	;;
 "3. Reinstall Vencord")
-    $TERMINAL /home/etaquet/reinstall_discord.sh
+    $TERMINAL $HOME/reinstall_discord.sh
 	;;
 "4. Reload shortcuts")
     $HOME/.config/hyprgnome/load-shortcuts.sh
